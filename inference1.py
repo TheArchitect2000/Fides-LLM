@@ -32,7 +32,7 @@ llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0, api_key=api_key1)
 from langchain.prompts import ChatPromptTemplate
 
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful assistant. Based on the context, answer the question."),
+    ("system", "You are an expert in Fides Innova Blockchain technology. Based on the context, answer the question."),
     ("human", "Question = {question}"),
     ("human", "Conext = {context}"),
 ])
@@ -45,10 +45,10 @@ def query(question):
 
 st.title("Ask anything about Fides Innova project:")
 
-user_input = st.text_input("Your input")
+user_input = st.text_input("Please type your question:")
 
 if user_input:
-    st.write("Your output")
+    st.write("Answer:")
  #   st.success(user_input)
     
     answer, metadata = query(user_input)
