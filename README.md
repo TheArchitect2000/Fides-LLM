@@ -7,5 +7,5 @@ This is an expert assistant on Fides Innova technology. You can ask it questions
 * What is zkMultiSensor?
 * How do I add ZKP to an IoT firmware?
 
-### A. Run Embedding.ipynb to generate the vector database
+#### A. Run Embedding.ipynb to generate the vector database
 #### B. Then, run "systemlit run inference1.py' to run the LLM.
