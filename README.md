@@ -9,3 +9,4 @@ This is an expert assistant on Fides Innova technology. You can ask it questions
 
 #### A. Run Embedding.ipynb to generate the vector database
 #### B. Then, run "systemlit run inference1.py' to run the LLM.
+* Don't forget to create a new ".env" file in your local folder and add your LLM API_Key in the file.
