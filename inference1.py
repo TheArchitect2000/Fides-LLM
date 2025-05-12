@@ -18,17 +18,21 @@
 
 import streamlit as st
 
+import time
+
 from langchain.vectorstores import Chroma, FAISS 
 from langchain.embeddings import OpenAIEmbeddings
 
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.tools import ArxivQueryRun, WikipediaQueryRun, DuckDuckGoSearchRun
 from langchain_community.utilities import ArxivAPIWrapper, WikipediaAPIWrapper
 
 from langchain_openai import ChatOpenAI
-from langchain.agents import initialize_agent, AgentType
+from langchain.agents import create_openai_tools_agent, AgentType, AgentExecutor
 
 from langchain.tools.retriever import create_retriever_tool
+
+from langchain.callbacks import StreamlitCallbackHandler
 
 from dotenv import load_dotenv
 import os
@@ -60,47 +64,68 @@ retriver1 = db.as_retriever()
 retrivertool1 = create_retriever_tool(retriver1, "FidesInnovaInformationDatabase", "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI")
 
 ########################
+llm = ChatOpenAI(model="gpt-4o-mini", api_key=api_key1)
+
+########################
 # Initializing the agent
 
-
-# db.similarity_search("what's zkmultisense?", k=1)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0, api_key=api_key1)
+tool_list = [wikipediatool, arxivtool]
 
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert in Fides Innova Blockchain technology. Based on the context, answer the question."),
-    ("human", "Question = {question}"),
-    ("human", "Context = {context}"),
+   ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question."),
+   ("human", "Question = {input}"),
+  # MessagePlaceholder("chat_history"),
+   MessagesPlaceholder("agent_scratchpad")
 ])
 
-chain = prompt | llm
+fidesagent = create_openai_tools_agent(llm, tool_list, prompt)
+fidesagentexecutor = AgentExecutor(agent=fidesagent, tools=tool_list)
 
-def query(question):
-    context = db.similarity_search(question, k=1)
-    return chain.invoke({"question": question, "context": context[0].page_content}).content, context[0].metadata
+#######################
+# db.similarity_search("what's zkmultisense?", k=1)
 
-st.title("Ask anything about Fides Innova project:")
+#######################                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+# chain = prompt | llm
 
-user_input = st.text_input("Please type your question:")
+# def query(question):
+#     context = db.similarity_search(question, k=1)
+#     return chain.invoke({"question": question, "context": context[0].page_content}).content, context[0].metadata
 
-if user_input:
-    st.write("Answer:")
- #   st.success(user_input)
-    
-    answer, metadata = query(user_input)
-    st.write(answer)
+#######################
+st.title("Ask anything from Fides Agent about Fides Innova project:")
+# user_input = st.text_input("Please type your question:")
 
-    st.subheader(metadata["type"])
-    if metadata["type"]=="Web":
-        st.write(metadata["source"])
-    if metadata["type"]=="PDF":
-        st.write(metadata["title"] + " | " + metadata["subject"])
-    if metadata["type"]=="YouTube":
-        st.write("https://www.youtube.com/watch?v="+metadata["source"])
-        try:
-            video_file = "https://www.youtube.com/watch?v="+metadata["source"]
-    #        with open(video_file, 'rb') as f:
-    #            video_bytes = f.read()
-            st.video(video_file)
-        except FileNotFoundError:
-            st.error("File not found.")
+if "messages" not in st.session_state:
+    st.session_state["messages"]=[
+        {"role":"assistant","content":"Hi,I'm a chatbot who can search the web. How can I help you?"}
+    ]
+
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg['content'])
+
+if prompt:=st.chat_input(placeholder="Your question:"):
+    st.session_state.messages.append({"role":"user","content":prompt})
+    st.chat_message("user").write(prompt)
+
+    with st.chat_message("assistant"):
+        st_cb = StreamlitCallbackHandler( st.container(), expand_new_thoughts=False)
+        response = fidesagentexecutor.invoke({"input":prompt})
+        st.session_state.messages.append({'role':'assistant',"content":response})
+        st.write(response)
+
+    # st.subheader(metadata["type"])
+    # if metadata["type"]=="Web":
+    #     st.write(metadata["source"])
+    # if metadata["type"]=="PDF":
+    #     st.write(metadata["title"] + " | " + metadata["subject"])
+    # if metadata["type"]=="YouTube":
+    #     st.write("https://www.youtube.com/watch?v="+metadata["source"])
+    #     try:
+    #         video_file = "https://www.youtube.com/watch?v="+metadata["source"]
+    # #        with open(video_file, 'rb') as f:
+    # #            video_bytes = f.read()
+    #         st.video(video_file)
+    #     except FileNotFoundError:
+    #         st.error("File not found.")
+##########################
+ 
