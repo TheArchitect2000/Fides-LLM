@@ -24,17 +24,22 @@ from langchain.vectorstores import Chroma, FAISS
 from langchain.embeddings import OpenAIEmbeddings
 
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+
 from langchain_community.tools import ArxivQueryRun, WikipediaQueryRun, DuckDuckGoSearchRun
-from langchain_community.utilities import ArxivAPIWrapper, WikipediaAPIWrapper
+from langchain_community.utilities import ArxivAPIWrapper, WikipediaAPIWrapper, DuckDuckGoSearchAPIWrapper, GoogleSerperAPIWrapper
+
+from langchain_core.runnables import RunnableConfig
 
 from langchain_openai import ChatOpenAI
-from langchain.agents import create_openai_tools_agent, AgentType, AgentExecutor
+
+from langchain.agents import Tool, create_openai_tools_agent, AgentType, AgentExecutor
 
 from langchain.tools.retriever import create_retriever_tool
 
 from langchain.callbacks import StreamlitCallbackHandler
 
 from dotenv import load_dotenv
+
 import os
 
 #######################
@@ -42,10 +47,8 @@ import os
 load_dotenv()
 
 # Get the API key
-api_key1 = os.getenv("API_KEY1")
-
-# Use the API key
-print(f"Using API Key: {api_key1}")
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["SERPER_API_KEY"] = os.getenv("SERPER_API_KEY")
 
 #######################
 # calling tools
@@ -55,21 +58,51 @@ arxivtool = ArxivQueryRun(api_wrapper=arxivwrapper)
 wikipediawrapper = WikipediaAPIWrapper(top_k_result=1, doc_content_chars_max=200)
 wikipediatool = WikipediaQueryRun(api_wrapper=wikipediawrapper)
 
-searchtool = DuckDuckGoSearchRun(name="DuckSearch1")
+# searchtool = DuckDuckGoSearchRun(name="DuckSearch1")
+searchWrapper = GoogleSerperAPIWrapper()
+searchtool = Tool(
+        name = "Search",
+        func = searchWrapper.run,
+        description = "useful for when you need to answer questions about current events. You should ask targeted questions",
+    )
 
-embedding1 = OpenAIEmbeddings(model="text-embedding-3-large", api_key=api_key1)
+def alaki(x):
+    return "alaki.com"
+
+alakitool = Tool(
+        name = "Alaki",
+        func = alaki,
+        description = "When you need to answer questions about Alaki. You should ask targeted questions",
+    ) 
+
+embedding1 = OpenAIEmbeddings(model="text-embedding-3-large")
 db = Chroma(persist_directory="chroma_langchain_db", embedding_function=embedding1, collection_name="example_collection")
 db.get()
 retriver1 = db.as_retriever()
-retrivertool1 = create_retriever_tool(retriver1, "FidesInnovaInformationDatabase", "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI")
+# retrivertool1 = create_retriever_tool(retriver1, "FidesInnovaInformationDatabase", "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI")
+
+
+#######################                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+# chain = prompt | llm
+
+def query(question):
+    context = db.similarity_search(question, k=1)
+    # return chain.invoke({"question": question, "context": context[0].page_content}).content, context[0].metadata
+    return {"context":context[0].page_content, "metadata":context[0].metadata}
+
+retrivertool1 = Tool(
+        name = "FidesInnovaInfoDB",
+        func = query,
+        description = "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI",
+    ) 
 
 ########################
-llm = ChatOpenAI(model="gpt-4o-mini", api_key=api_key1)
+llm = ChatOpenAI(model="gpt-4o-mini")
 
 ########################
 # Initializing the agent
 
-tool_list = [wikipediatool, arxivtool]
+tool_list = [alakitool, retrivertool1, searchtool, wikipediatool, arxivtool]
 
 prompt = ChatPromptTemplate.from_messages([
    ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question."),
@@ -84,20 +117,13 @@ fidesagentexecutor = AgentExecutor(agent=fidesagent, tools=tool_list)
 #######################
 # db.similarity_search("what's zkmultisense?", k=1)
 
-#######################                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-# chain = prompt | llm
-
-# def query(question):
-#     context = db.similarity_search(question, k=1)
-#     return chain.invoke({"question": question, "context": context[0].page_content}).content, context[0].metadata
-
 #######################
-st.title("Ask anything from Fides Agent about Fides Innova project:")
+st.title("Fides Innova AI Agent:")
 # user_input = st.text_input("Please type your question:")
 
 if "messages" not in st.session_state:
     st.session_state["messages"]=[
-        {"role":"assistant","content":"Hi,I'm a chatbot who can search the web. How can I help you?"}
+        {"role":"assistant","content":"How can I help you?"}
     ]
 
 for msg in st.session_state.messages:
@@ -109,7 +135,12 @@ if prompt:=st.chat_input(placeholder="Your question:"):
 
     with st.chat_message("assistant"):
         st_cb = StreamlitCallbackHandler( st.container(), expand_new_thoughts=False)
-        response = fidesagentexecutor.invoke({"input":prompt})
+
+        cfg = RunnableConfig()
+        cfg["callbacks"] = [st_cb]
+
+        response = fidesagentexecutor.invoke({"input":prompt}, cfg)
+
         st.session_state.messages.append({'role':'assistant',"content":response})
         st.write(response)
 
