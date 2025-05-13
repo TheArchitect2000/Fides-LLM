@@ -31,18 +31,14 @@ from langchain_community.utilities import ArxivAPIWrapper, WikipediaAPIWrapper, 
 from langchain_core.runnables import RunnableConfig
 
 from langchain_openai import ChatOpenAI
-
 from langchain.agents import Tool, create_openai_tools_agent, AgentType, AgentExecutor
+from langchain.agents.output_parsers.json import JSONAgentOutputParser
+from langchain_core.output_parsers.json import JsonOutputParser
 
 from langchain.tools.retriever import create_retriever_tool
-
 from langchain.callbacks import StreamlitCallbackHandler
 
 from dotenv import load_dotenv
-
-from langchain.agents.output_parsers.json import JSONAgentOutputParser
-
-from langchain_core.output_parsers.json import JsonOutputParser
 
 import os
 
@@ -85,7 +81,6 @@ db.get()
 retriver1 = db.as_retriever()
 # retrivertool1 = create_retriever_tool(retriver1, "FidesInnovaInformationDatabase", "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI")
 
-
 #######################                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 # chain = prompt | llm
 
@@ -109,7 +104,7 @@ llm = ChatOpenAI(model="gpt-4o-mini")
 tool_list = [alakitool, retrivertool1, searchtool, wikipediatool, arxivtool]
 
 prompt = ChatPromptTemplate.from_messages([
-   ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question, and return the output in a json format without mentioning the json word. If you found something in the FidesInnovaInfoDB database, then return two keywords in the json content as (answer, metadata). Otherwise, only return the (answer)."),
+   ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question, and return the output in a json format without mentioning the json word. If you found something in the FidesInnovaInfoDB database, then return two keywords in the json content as (answer, metadata). When sending the metadata, keep the key and the value of both the type and the source. Otherwise, only return the (answer)."),
    ("human", "Question = {input}"),
   # MessagePlaceholder("chat_history"),
    MessagesPlaceholder("agent_scratchpad")
@@ -119,22 +114,23 @@ fidesagent = create_openai_tools_agent(llm, tool_list, prompt)
 fidesagentexecutor = AgentExecutor(agent=fidesagent, tools=tool_list)
 
 fidesagentexecutor2 = fidesagentexecutor | JsonOutputParser()
+
 #######################
 # db.similarity_search("what's zkmultisense?", k=1)
 
 #######################
-st.title("Fides Innova AI Agent:")
+st.title("Fides Innova AI Agent")
 # user_input = st.text_input("Please type your question:")
 
 if "messages" not in st.session_state:
     st.session_state["messages"]=[
-        {"role":"assistant","content":"How can I help you?"}
+        {"role":"assistant","content":"Ask me anything about Fides Innova verifiable computing technology and project."}
     ]
 
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg['content'])
 
-if prompt:=st.chat_input(placeholder="Your question:"):
+if prompt:=st.chat_input(placeholder="- What's zk-IoT?\n- How to install a new IoT Server and connect to the Fides network?\n- How to install a zkDevice?\n- How to add Fides library to my C++ code?\n- How to generate and submit a program commitment?\n- How to generate a zero-knowledge proof (ZKP)?"):
     st.session_state.messages.append({"role":"user","content":prompt})
     st.chat_message("user").write(prompt)
 
