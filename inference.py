@@ -18,7 +18,7 @@
 
 import streamlit as st
 
-import time
+import json 
 
 from langchain.vectorstores import Chroma, FAISS 
 from langchain.embeddings import OpenAIEmbeddings
@@ -39,6 +39,10 @@ from langchain.tools.retriever import create_retriever_tool
 from langchain.callbacks import StreamlitCallbackHandler
 
 from dotenv import load_dotenv
+
+from langchain.agents.output_parsers.json import JSONAgentOutputParser
+
+from langchain_core.output_parsers.json import JsonOutputParser
 
 import os
 
@@ -105,7 +109,7 @@ llm = ChatOpenAI(model="gpt-4o-mini")
 tool_list = [alakitool, retrivertool1, searchtool, wikipediatool, arxivtool]
 
 prompt = ChatPromptTemplate.from_messages([
-   ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question."),
+   ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question, and return the output in a json format without mentioning the json word. If you found something in the FidesInnovaInfoDB database, then return two keywords in the json content as (answer, metadata). Otherwise, only return the (answer)."),
    ("human", "Question = {input}"),
   # MessagePlaceholder("chat_history"),
    MessagesPlaceholder("agent_scratchpad")
@@ -114,6 +118,7 @@ prompt = ChatPromptTemplate.from_messages([
 fidesagent = create_openai_tools_agent(llm, tool_list, prompt)
 fidesagentexecutor = AgentExecutor(agent=fidesagent, tools=tool_list)
 
+fidesagentexecutor2 = fidesagentexecutor | JsonOutputParser()
 #######################
 # db.similarity_search("what's zkmultisense?", k=1)
 
@@ -140,23 +145,26 @@ if prompt:=st.chat_input(placeholder="Your question:"):
         cfg["callbacks"] = [st_cb]
 
         response = fidesagentexecutor.invoke({"input":prompt}, cfg)
+        myjsonoutputparser = JsonOutputParser()
+        jsonresponse = json.loads(response["output"])
 
         st.session_state.messages.append({'role':'assistant',"content":response})
-        st.write(response)
 
-    # st.subheader(metadata["type"])
-    # if metadata["type"]=="Web":
-    #     st.write(metadata["source"])
-    # if metadata["type"]=="PDF":
-    #     st.write(metadata["title"] + " | " + metadata["subject"])
-    # if metadata["type"]=="YouTube":
-    #     st.write("https://www.youtube.com/watch?v="+metadata["source"])
-    #     try:
-    #         video_file = "https://www.youtube.com/watch?v="+metadata["source"]
-    # #        with open(video_file, 'rb') as f:
-    # #            video_bytes = f.read()
-    #         st.video(video_file)
-    #     except FileNotFoundError:
-    #         st.error("File not found.")
-##########################
+        st.write(jsonresponse["answer"])
+
+        if "metadata" in jsonresponse:
+            if jsonresponse["metadata"]: 
+                metadata = jsonresponse["metadata"]
+                st.subheader(metadata["type"])
+                if metadata["type"]=="Web":
+                    st.write(metadata["source"])
+                if metadata["type"]=="PDF":
+                    st.write(metadata["title"] + " | " + metadata["subject"])
+                if metadata["type"]=="YouTube":
+                    st.write("https://www.youtube.com/watch?v="+metadata["source"])
+                    try:
+                        video_file = "https://www.youtube.com/watch?v="+metadata["source"]
+                        st.video(video_file)
+                    except FileNotFoundError:
+                        st.error("File not found.")
  
