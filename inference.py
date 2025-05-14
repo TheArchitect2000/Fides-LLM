@@ -17,19 +17,17 @@
 # pip install streamlit
 
 import streamlit as st
-
+from dotenv import load_dotenv
 import json 
+import os
 
 from langchain.vectorstores import Chroma, FAISS 
 from langchain.embeddings import OpenAIEmbeddings
-
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-
 from langchain_community.tools import ArxivQueryRun, WikipediaQueryRun, DuckDuckGoSearchRun
 from langchain_community.utilities import ArxivAPIWrapper, WikipediaAPIWrapper, DuckDuckGoSearchAPIWrapper, GoogleSerperAPIWrapper
-
 from langchain_core.runnables import RunnableConfig
-
+from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_openai import ChatOpenAI
 from langchain.agents import Tool, create_openai_tools_agent, AgentType, AgentExecutor
 from langchain.agents.output_parsers.json import JSONAgentOutputParser
@@ -38,9 +36,9 @@ from langchain_core.output_parsers.json import JsonOutputParser
 from langchain.tools.retriever import create_retriever_tool
 from langchain.callbacks import StreamlitCallbackHandler
 
-from dotenv import load_dotenv
-
-import os
+## needed for chat history
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
 
 #######################
 # Load environment variables from .env file
@@ -83,7 +81,6 @@ retriver1 = db.as_retriever()
 
 #######################                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 # chain = prompt | llm
-
 def query(question):
     context = db.similarity_search(question, k=1)
     # return chain.invoke({"question": question, "context": context[0].page_content}).content, context[0].metadata
@@ -99,19 +96,27 @@ retrivertool1 = Tool(
 llm = ChatOpenAI(model="gpt-4o-mini")
 
 ########################
-# Initializing the agent
+# Session management
+def get_session_history(session:str)->BaseChatMessageHistory:
+    if session_id not in st.session_state.store:
+        st.session_state.store[session_id]=ChatMessageHistory()
+    return st.session_state.store[session_id]
+
+########################
+# Initialize the agent
 
 tool_list = [alakitool, retrivertool1, searchtool, wikipediatool, arxivtool]
 
 prompt = ChatPromptTemplate.from_messages([
    ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question, and return the output in a json format without mentioning the json word. If you found something in the FidesInnovaInfoDB database, then return two keywords in the json content as (answer, metadata). When sending the metadata, keep the key and the value of both the type and the source. Otherwise, only return the (answer)."),
    ("human", "Question = {input}"),
-  # MessagePlaceholder("chat_history"),
+   MessagePlaceholder("chat_history"),
    MessagesPlaceholder("agent_scratchpad")
 ])
 
 fidesagent = create_openai_tools_agent(llm, tool_list, prompt)
 fidesagentexecutor = AgentExecutor(agent=fidesagent, tools=tool_list)
+fidesagentexecutorwithhistory = RunnableWithMessageHistory(fidesagentexecutor, get_session_history, output_messages_key="Assitant_Response", input_messages_key="input", history_messages_key="chat_history")
 
 fidesagentexecutor2 = fidesagentexecutor | JsonOutputParser()
 
