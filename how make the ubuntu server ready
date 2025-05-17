@@ -1,0 +1,25 @@
+sudo nano /etc/systemd/system/fides-llm.service
+
+***************************
+[Unit]
+Description=Fides LLM Streamlit App
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Fides-LLM
+ExecStart=/home/ubuntu/Fides-LLM/venv/bin/streamlit run inference.py
+Restart=always
+Environment="PATH=/home/ubuntu/Fides-LLM/venv/bin"
+
+[Install]
+WantedBy=multi-user.target
+*****************************
+
+sudo systemctl daemon-reload
+sudo systemctl enable fides-llm
+sudo systemctl start fides-llm
+
+sudo systemctl status fides-llm
+journalctl -u fides-llm -f
+
