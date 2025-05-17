@@ -206,7 +206,7 @@ with st.sidebar:
     st.markdown(
         """
         <div style="text-align: center;">
-            <img src="https://fidesinnova.io/wp-content/uploads/2024/07/Logo-Captcha-Reduce-size.png" width="110">
+            <img src="https://fidesinnova.io/Logo-Captcha-Reduce-size.png" width="110">
             <div style="font-size: 28px; font-weight: bold; margin-top: 14px; color: white;">
                 Fides Innova<br>AI Agent
             </div>
