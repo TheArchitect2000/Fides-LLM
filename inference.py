@@ -206,7 +206,7 @@ with st.sidebar:
     st.markdown(
         """
         <div style="text-align: center;">
-            <img src="https://panel.zksensor.tech/img/logo/logo-dark-full.png" width="110">
+            <img src="https://panel.zksensor.tech/img/logo/logo-dark-full.png" width="250">
             <div style="font-size: 28px; font-weight: bold; margin-top: 14px; color: white;">
                 Fides Innova<br>AI Agent
             </div>
