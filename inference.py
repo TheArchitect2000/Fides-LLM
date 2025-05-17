@@ -13,9 +13,6 @@
 # 6.5- Proof Verification Agent: Receive the verification request from a user and search the blockchain, verify it and send the result back to the user. Also, provides a link for the user via explorer.fidesinnova.io
 # 6.6- Device Driving Agent: Train the user for proper device usage.
 
-# pip install python-dotenv
-# pip install streamlit
-
 import streamlit as st
 from dotenv import load_dotenv
 import json 
@@ -231,13 +228,13 @@ with st.sidebar:
             <li><a href="https://www.youtube.com/@fidesinnova" target="_blank" style="color:white;">📺 YouTube Channel</a></li>
             <li><a href="https://github.com/TheArchitect2000/iot-server" target="_blank" style="color:white;">💻 GitHub IoT Server</a></li>
             <li><a href="https://github.com/TheArchitect2000/zkiot-arm-siemens-iot2050-c" target="_blank" style="color:white;">💻 ZKP Device Integration</a></li>
-            <li><a href="https://github.com/TheArchitect2000/Fides-Innova-WiKi" target="_blank" style="color:white;">📘 Wiki</a></li>
+            <li><a href="https://github.com/TheArchitect2000/Fides-Innova-WiKi?tab=readme-ov-file#fidesinnova-wiki" target="_blank" style="color:white;">📘 Wiki</a></li>
         </ul>
         </div>""",
         unsafe_allow_html=True
     )
     
-if prompt:=st.chat_input(placeholder="- What's zk-IoT?\n- How to install a new IoT Server and connect to the Fides network?\n- How to install a zkDevice?\n- How to add Fides library to my C++ code?\n- How to generate and submit a program commitment?\n- How to generate a zero-knowledge proof (ZKP)?"):
+if prompt:=st.chat_input(placeholder="- How to install a new IoT Server and connect to the Fides network?\n- What's zk-IoT?\n- How to install a zkDevice?\n- How to add Fides library to my C++ code?\n- How to generate and submit a program commitment?\n- How to generate a zero-knowledge proof (ZKP)?"):
     st.session_state.messages.append({"role":"user","content":prompt})
     st.session_state.messages2.append({"role":"user","content":prompt})
 
