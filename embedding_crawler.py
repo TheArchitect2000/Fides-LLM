@@ -159,18 +159,20 @@ print(f"✅ Found {len(video_ids)} videos on channel.\n")
 youtube_docs = []
 for idx in video_ids:
     a = YoutubeLoader(idx)
-    try:
-        youtube_docs.extend(a.load())
-        print(idx)
-    except:
-        print(f"{idx} not loaded.")
-        try:
-            time.sleep(8)
-            youtube_docs.extend(a.load())
-            print(idx)
-        except:
-            print(f"{idx} not loaded.")
-            pass
+    youtube_docs.extend(a.load())
+
+    # try:
+    #     youtube_docs.extend(a.load())
+    #     print(idx)
+    # except:
+    #     print(f"{idx} not loaded.")
+    #     try:
+    #         time.sleep(8)
+    #         youtube_docs.extend(a.load())
+    #         print(idx)
+    #     except:
+    #         print(f"{idx} not loaded.")
+    #         pass
 
 def change_YouTube_doc(doc):
     doc.metadata['type']='YouTube'
