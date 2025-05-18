@@ -8,3 +8,9 @@ pytube==15.0.0
 Requests==2.32.3
 streamlit==1.45.0
 web3==7.11.0
+bs4 
+chromadb
+yt_dlp
+youtube-transcript-api
+pypdf
+
