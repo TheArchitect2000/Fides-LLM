@@ -42,7 +42,7 @@ searchtool = Tool(
     )
 
 embedding1 = OpenAIEmbeddings(model="text-embedding-3-large")
-db = Chroma(persist_directory="chroma_langchain_db", embedding_function=embedding1, collection_name="example_collection")
+db = Chroma(persist_directory="chroma_langchain_db", embedding_function=embedding1, collection_name="fides_crawled_data")
 db.get()
 retriver1 = db.as_retriever()
 # retrivertool1 = create_retriever_tool(retriver1, "FidesInnovaInformationDatabase", "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI")
@@ -76,9 +76,9 @@ def get_session_history(session_id:str)->BaseChatMessageHistory:
 tool_list = [retrivertool1, searchtool, wikipediatool, arxivtool]
 
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert in Fides Innova Verifiable Computing. Always respond strictly in valid JSON format like this: {{\"answer\": \"...\", \"metadata\": {{\"type\": \"...\", \"source\": \"...\"}}}}. Do not include markdown, backticks, or explanations outside the JSON."),
+    ("system", "You are an expert in Fides Innova project. Always respond strictly in valid JSON format like this: {{\"answer\": \"...\", \"metadata\": {{\"type\": \"...\", \"source\": \"...\"}}}}. Do not include markdown, backticks, or explanations outside the JSON. Based on the context, answer the question, and return the output."),
 #    ("system", "You are an expert in Fides Innova Verifiable Computing. Always respond strictly in valid JSON format like this: {\"answer\": \"...\", \"metadata\": {\"type\": \"...\", \"source\": \"...\"}}. Do not include markdown, backticks, or explanations outside the JSON."),
- #  ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question, and return the output in a json format without mentioning the json word. If you found something in the FidesInnovaInfoDB database, then return two keywords in the json content as (answer, metadata). When sending the metadata, keep the key and the value of both the type and the source. If the type of the source is PDF, return all metadata keys and values without any changes. Otherwise, only return the (answer)."),
+ #  ("system", "You are an expert in Fides Innova Verifiable Computing technology. "),
   #  ("system", "You are an expert in Fides Innova Verifiable Computing. Always return responses strictly in this JSON format: {\"answer\": \"...\", \"metadata\": {\"type\": \"...\", \"source\": \"...\"}}. Do not include any markdown, code formatting, or extra text before or after the JSON."),
    ("human", "Question = {input}"),
    MessagesPlaceholder("chat_history"),
@@ -212,15 +212,19 @@ if prompt:=st.chat_input(placeholder="- How to install a new IoT Server and conn
     st.session_state.messages.append({"role":"user","content":prompt})
     st.session_state.messages2.append({"role":"user","content":prompt})
 
+    # what user types will be written with a user icon, only to display
     st.chat_message("user").write(prompt)
     
-
+    # what we types will be written with an assistant icon, only to display
+    # all the call backs and chain-of-thoughts will be shown in side this container
     with st.chat_message("assistant"):
         
+        # Streamlit gets the call_back responses
         st_cb = StreamlitCallbackHandler( st.container(), expand_new_thoughts=False)
 
         cfg = RunnableConfig()
         cfg["callbacks"] = [st_cb]
+        # for chat history
         cfg["configurable"] = {"session_id":session_id}
         current_session_history = get_session_history(session_id)
         current_session_history.add_user_message(prompt)
@@ -255,7 +259,10 @@ if prompt:=st.chat_input(placeholder="- How to install a new IoT Server and conn
             "chat_history": current_session_history.messages
         }, cfg)
 
-        raw_output = response["output"]
+        print(parsed_response)
+        raw_output = parsed_response["output"]
+        print(raw_output)
+    
         clean_output = re.sub(r"```json|```", "", raw_output).strip()
 
         try:
@@ -270,7 +277,7 @@ if prompt:=st.chat_input(placeholder="- How to install a new IoT Server and conn
 #        current_session_history.add_ai_message(json.dumps(jsonresponse))
         current_session_history.add_ai_message(raw_output)
 
-        st.session_state.messages.append({'role':'assistant',"content":response})
+        st.session_state.messages.append({'role':'assistant',"content":parsed_response})
         st.session_state.messages2.append({'role':'assistant',"content":jsonresponse["answer"]})
 
         st.write(jsonresponse["answer"])
@@ -286,6 +293,11 @@ if prompt:=st.chat_input(placeholder="- How to install a new IoT Server and conn
                        st.write(metadata["title"] + " | " + metadata["subject"])
                     except:
                        st.write(metadata["title"])
+                if metadata["type"]=="PPTX":
+                    try:
+                       st.write(metadata["source"])
+                    except:
+                        pass
                 if metadata["type"]=="YouTube":
                     st.write("https://www.youtube.com/watch?v="+metadata["source"])
                     try:
