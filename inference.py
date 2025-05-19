@@ -44,7 +44,7 @@ searchtool = Tool(
     )
 
 embedding1 = OpenAIEmbeddings(model="text-embedding-3-large")
-db = Chroma(persist_directory="chroma_langchain_db", embedding_function=embedding1, collection_name="fides_crawled_data")
+db = Chroma(persist_directory="chroma_langchain_db2", embedding_function=embedding1, collection_name="fides_crawled_data")
 db.get()
 retriver1 = db.as_retriever()
 # retrivertool1 = create_retriever_tool(retriver1, "FidesInnovaInformationDatabase", "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI")
