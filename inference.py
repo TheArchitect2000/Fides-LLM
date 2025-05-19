@@ -3,6 +3,8 @@ import streamlit as st
 import json 
 import os
 import re
+import random
+
 
 from dotenv import load_dotenv
 from langchain.vectorstores import Chroma, FAISS 
@@ -51,20 +53,19 @@ retriver1 = db.as_retriever()
 # chain = prompt | llm
 def query(question):
     context = db.similarity_search(question, k=1)
-    
-    print("Context length:", len(context))
-    print("Context content:", context)
-
-    # return chain.invoke({"question": question, "context": context[0].page_content}).content, context[0].metadata
+    # page_contents = list(map(lambda x:x.page_content, context))
+    # meta_data = list(map(lambda x:x.metadata, context))
+    # return {"context":page_contents, "metadata":meta_data}
     return {"context":context[0].page_content, "metadata":context[0].metadata}
+    # return (context)
 
 retrivertool1 = Tool(
         name = "FidesInnovaInfoDB",
         func = query,
-        description = "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI",
+        description = "Search any information about Fides Innova project and technology.",
     ) 
 
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-4o-mini")
 
 # Session management
 def get_session_history(session_id:str)->BaseChatMessageHistory:
@@ -76,7 +77,12 @@ def get_session_history(session_id:str)->BaseChatMessageHistory:
 tool_list = [retrivertool1, searchtool, wikipediatool, arxivtool]
 
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert in Fides Innova project. Always respond strictly in valid JSON format like this: {{\"answer\": \"...\", \"metadata\": {{\"type\": \"...\", \"source\": \"...\"}}}}. Do not include markdown, backticks, or explanations outside the JSON. Based on the context, answer the question, and return the output."),
+    ("system", """
+     You are an expert in Fides Innova project. 
+     Always respond strictly in valid JSON format like this: {{\"answer\": \"...\", \"metadata\": {{\"type\": \"...\", \"source\": \"...\", \"title\": \"...\"}}}}. Do not include markdown, backticks, or explanations outside the JSON. 
+     Based on the context, answer the question, and return the output. 
+     """),
+# If you found something valuable in FidesInnovaInfoDB, the answer would be a list of documents that have page_content and metadata, these two should be used to create the answer and metadata.
 #    ("system", "You are an expert in Fides Innova Verifiable Computing. Always respond strictly in valid JSON format like this: {\"answer\": \"...\", \"metadata\": {\"type\": \"...\", \"source\": \"...\"}}. Do not include markdown, backticks, or explanations outside the JSON."),
  #  ("system", "You are an expert in Fides Innova Verifiable Computing technology. "),
   #  ("system", "You are an expert in Fides Innova Verifiable Computing. Always return responses strictly in this JSON format: {\"answer\": \"...\", \"metadata\": {\"type\": \"...\", \"source\": \"...\"}}. Do not include any markdown, code formatting, or extra text before or after the JSON."),
@@ -86,7 +92,7 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 fidesagent = create_openai_tools_agent(llm, tool_list, prompt)
-fidesagentexecutor = AgentExecutor(agent=fidesagent, tools=tool_list)
+fidesagentexecutor = AgentExecutor( agent = fidesagent, tools = tool_list)
 fidesagentexecutorwithhistory = RunnableWithMessageHistory(fidesagentexecutor, get_session_history, output_messages_key="output", input_messages_key="input", history_messages_key="chat_history")
 
 fidesagentexecutor2 = fidesagentexecutor | JsonOutputParser()
@@ -97,9 +103,14 @@ fidesagentexecutor2 = fidesagentexecutor | JsonOutputParser()
 st.title("Ask your questions about Fides Innova.")
 # user_input = st.text_input("Please type your question:")
 
+def get_or_create_session_id():
+    import uuid
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = str(uuid.uuid4())
+    return st.session_state.session_id
+
 # session_id=st.text_input("Session ID",value="default_session")
-import random
-session_id = str(random.randint(10000,200000))
+session_id = str(get_or_create_session_id())
 
 if 'store' not in st.session_state:
     st.session_state.store={}
@@ -208,7 +219,7 @@ with st.sidebar:
         unsafe_allow_html=True
     )
     
-if prompt:=st.chat_input(placeholder="- How to install a new IoT Server and connect to the Fides network?\n- What's zk-IoT?\n- How to install a zkDevice?\n- How to add Fides library to my C++ code?\n- How to generate and submit a program commitment?\n- How to generate a zero-knowledge proof (ZKP)?"):
+if prompt := st.chat_input(placeholder="- How to install a new IoT Server and connect to the Fides network?\n- What's zk-IoT?\n- How to install a zkDevice?\n- How to add Fides library to my C++ code?\n- How to generate and submit a program commitment?\n- How to generate a zero-knowledge proof (ZKP)?"):
     st.session_state.messages.append({"role":"user","content":prompt})
     st.session_state.messages2.append({"role":"user","content":prompt})
 
@@ -255,13 +266,16 @@ if prompt:=st.chat_input(placeholder="- How to install a new IoT Server and conn
     #   parsed_response = fidesagentexecutor2.invoke({"input": prompt}, cfg)
 
         parsed_response = fidesagentexecutorwithhistory.invoke({
-            "input": prompt,
-            "chat_history": current_session_history.messages
+            "input": prompt
         }, cfg)
 
-        print(parsed_response)
+
+        # print("History = ", current_session_history.messages)
+        # print("session id: " , session_id)
+        # print("Get History: " , get_session_history(session_id))
+        # # print(parsed_response)
         raw_output = parsed_response["output"]
-        print(raw_output)
+        # print(raw_output)
     
         clean_output = re.sub(r"```json|```", "", raw_output).strip()
 
