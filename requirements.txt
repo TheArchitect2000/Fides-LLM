@@ -13,4 +13,7 @@ chromadb
 yt_dlp
 youtube-transcript-api
 pypdf
+gdown
+unzip
+
 

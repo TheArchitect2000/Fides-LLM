@@ -1,23 +1,10 @@
-## Creating Fides Innova agent
-# 1- Wrapper for different data sources such as Arxiv, WikiPedia, DuckDuckGo, 
-# 2- Adding RAG as a tool
-# 3- Connector to Databases
-# 4- LLM Fine-tunning
-# 5- Connector to Blockchain RPC
-
-# 6- Multi-agent structure (Sequential agent, Hirechacy agent, Nested agent) for Verifiable Agentic AI
-# 6-1- Program Commitment Generator Agent: Read the user program (e.g., TeslaV17.cpp) and generate a commitment file (e.g., Tesla17Commitment.json).
-# 6-2- Commitment Uploader Agent: Read the commitment file (e.g., Tesla17Commitment.json) and upload it on the Fides Innova blockchain (e.g., rpc.fidesinnova.io).
-# 6-3- Device Registration Agent: Register the device on an IoT server (e.g., zkSensor.tech IoT server) and assign a commitment file (e.g., Tesla17Commitment.json) on the Fides Innova blockchain to the registered device. 
-# 6.4- Device Proof Generation: This steps should be dne by the device or user program itself. Therefore, Fides Innova cannot make it agentic-based. We have provided a .h library to add proof generation capabilities to the user's program. User sends its proof to the blockchain.
-# 6.5- Proof Verification Agent: Receive the verification request from a user and search the blockchain, verify it and send the result back to the user. Also, provides a link for the user via explorer.fidesinnova.io
-# 6.6- Device Driving Agent: Train the user for proper device usage.
-
+### Creating Fides Innova agent
 import streamlit as st
-from dotenv import load_dotenv
 import json 
 import os
+import re
 
+from dotenv import load_dotenv
 from langchain.vectorstores import Chroma, FAISS 
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -29,24 +16,17 @@ from langchain_openai import ChatOpenAI
 from langchain.agents import Tool, create_openai_tools_agent, AgentType, AgentExecutor
 from langchain.agents.output_parsers.json import JSONAgentOutputParser
 from langchain_core.output_parsers.json import JsonOutputParser
-
 from langchain.tools.retriever import create_retriever_tool
 from langchain.callbacks import StreamlitCallbackHandler
-
-## needed for chat history
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 
-#######################
-# Load environment variables from .env file
+### Load environment variables from .env file
 load_dotenv()
-
-# Get the API key
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 os.environ["SERPER_API_KEY"] = os.getenv("SERPER_API_KEY")
 
-#######################
-# calling tools
+###  calling tools
 arxivwrapper = ArxivAPIWrapper(top_k_result=1, doc_content_chars_max=200)
 arxivtool = ArxivQueryRun(api_wrapper=arxivwrapper)
 
@@ -61,15 +41,6 @@ searchtool = Tool(
         description = "useful for when you need to answer questions about current events. You should ask targeted questions",
     )
 
-def alaki(x):
-    return "alaki.com"
-
-alakitool = Tool(
-        name = "Alaki",
-        func = alaki,
-        description = "When you need to answer questions about Alaki. You should ask targeted questions",
-    ) 
-
 embedding1 = OpenAIEmbeddings(model="text-embedding-3-large")
 db = Chroma(persist_directory="chroma_langchain_db", embedding_function=embedding1, collection_name="example_collection")
 db.get()
@@ -80,6 +51,10 @@ retriver1 = db.as_retriever()
 # chain = prompt | llm
 def query(question):
     context = db.similarity_search(question, k=1)
+    
+    print("Context length:", len(context))
+    print("Context content:", context)
+
     # return chain.invoke({"question": question, "context": context[0].page_content}).content, context[0].metadata
     return {"context":context[0].page_content, "metadata":context[0].metadata}
 
@@ -89,22 +64,22 @@ retrivertool1 = Tool(
         description = "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI",
     ) 
 
-########################
-llm = ChatOpenAI(model="gpt-4o-mini")
+llm = ChatOpenAI(model="gpt-4o")
 
-########################
 # Session management
 def get_session_history(session_id:str)->BaseChatMessageHistory:
     if session_id not in st.session_state.store:
         st.session_state.store[session_id]=ChatMessageHistory()
     return st.session_state.store[session_id]
 
-########################
 # Initialize the agent
-tool_list = [alakitool, retrivertool1, searchtool, wikipediatool, arxivtool]
+tool_list = [retrivertool1, searchtool, wikipediatool, arxivtool]
 
 prompt = ChatPromptTemplate.from_messages([
-   ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question, and return the output in a json format without mentioning the json word. If you found something in the FidesInnovaInfoDB database, then return two keywords in the json content as (answer, metadata). When sending the metadata, keep the key and the value of both the type and the source. If the type of the source is PDF, return all metadata keys and values without any changes. Otherwise, only return the (answer)."),
+    ("system", "You are an expert in Fides Innova Verifiable Computing. Always respond strictly in valid JSON format like this: {{\"answer\": \"...\", \"metadata\": {{\"type\": \"...\", \"source\": \"...\"}}}}. Do not include markdown, backticks, or explanations outside the JSON."),
+#    ("system", "You are an expert in Fides Innova Verifiable Computing. Always respond strictly in valid JSON format like this: {\"answer\": \"...\", \"metadata\": {\"type\": \"...\", \"source\": \"...\"}}. Do not include markdown, backticks, or explanations outside the JSON."),
+ #  ("system", "You are an expert in Fides Innova Verifiable Computing technology. Based on the context, answer the question, and return the output in a json format without mentioning the json word. If you found something in the FidesInnovaInfoDB database, then return two keywords in the json content as (answer, metadata). When sending the metadata, keep the key and the value of both the type and the source. If the type of the source is PDF, return all metadata keys and values without any changes. Otherwise, only return the (answer)."),
+  #  ("system", "You are an expert in Fides Innova Verifiable Computing. Always return responses strictly in this JSON format: {\"answer\": \"...\", \"metadata\": {\"type\": \"...\", \"source\": \"...\"}}. Do not include any markdown, code formatting, or extra text before or after the JSON."),
    ("human", "Question = {input}"),
    MessagesPlaceholder("chat_history"),
    MessagesPlaceholder("agent_scratchpad")
@@ -116,11 +91,10 @@ fidesagentexecutorwithhistory = RunnableWithMessageHistory(fidesagentexecutor, g
 
 fidesagentexecutor2 = fidesagentexecutor | JsonOutputParser()
 
-#######################
 # db.similarity_search("what's zkmultisense?", k=1)
 
 #######################
-st.title("Fides Innova AI Agent")
+st.title("Ask your questions about Fides Innova.")
 # user_input = st.text_input("Please type your question:")
 
 # session_id=st.text_input("Session ID",value="default_session")
@@ -134,8 +108,8 @@ if "messages" not in st.session_state:
     st.session_state["messages"]=[
         {"role":"assistant",
          "content":"""
-            I have access to all Fides Innova documents including the GitHub repositories, YouTube videos, WiKi, Pitch Deck, PDF files, etc. \r\n
-            Ask me anything about Fides Innova verifiable computing technology and project."""}
+            I have access to Fides Innova documents including the GitHub repositories, YouTube videos, WiKi, Pitch Deck, PDF files, etc. \r\n
+            Ask me anything about Fides Innova technology and project."""}
     ]
 
 if "messages2" not in st.session_state:
@@ -208,7 +182,7 @@ with st.sidebar:
         <div style="text-align: center;">
             <img src="https://panel.zksensor.tech/img/logo/logo-dark-full.png" width="250">
             <div style="font-size: 28px; font-weight: bold; margin-top: 14px; color: white;">
-                Fides Innova<br>AI Agent
+                Fides Innova<br>AI Assistant
             </div>
         </div>
         """,
@@ -251,10 +225,50 @@ if prompt:=st.chat_input(placeholder="- How to install a new IoT Server and conn
         current_session_history = get_session_history(session_id)
         current_session_history.add_user_message(prompt)
 
-        response = fidesagentexecutorwithhistory.invoke({"input":prompt}, cfg)
-        myjsonoutputparser = JsonOutputParser()
-        jsonresponse = json.loads(response["output"])
-        current_session_history.add_ai_message(response["output"])
+    #     response = fidesagentexecutorwithhistory.invoke({"input":prompt}, cfg)
+        
+    #     myjsonoutputparser = JsonOutputParser()
+        
+    #     import re
+
+    #     raw_output = response["output"]
+    #     clean_output = re.sub(r"```json|```", "", raw_output).strip()
+
+    #     try:
+    #         jsonresponse = json.loads(clean_output)
+    #     except json.JSONDecodeError as e:
+    #         st.error("⚠️ Failed to parse model output as JSON.")
+    #         st.text(clean_output)
+    #         raise e
+
+    #    #  jsonresponse = json.loads(response["output"])
+
+    #     parsed_response = fidesagentexecutor2.invoke({"input": prompt}, cfg)
+    #     jsonresponse = parsed_response  # Already parsed dict
+
+    #     current_session_history.add_ai_message(response["output"])
+
+    #   parsed_response = fidesagentexecutor2.invoke({"input": prompt}, cfg)
+
+        parsed_response = fidesagentexecutorwithhistory.invoke({
+            "input": prompt,
+            "chat_history": current_session_history.messages
+        }, cfg)
+
+        raw_output = response["output"]
+        clean_output = re.sub(r"```json|```", "", raw_output).strip()
+
+        try:
+            jsonresponse = json.loads(clean_output)
+        except json.JSONDecodeError as e:
+            st.error("⚠️ Failed to parse model output as JSON.")
+            st.text(raw_output)
+            raise e
+
+        # jsonresponse = parsed_response  # Already parsed dict
+
+#        current_session_history.add_ai_message(json.dumps(jsonresponse))
+        current_session_history.add_ai_message(raw_output)
 
         st.session_state.messages.append({'role':'assistant',"content":response})
         st.session_state.messages2.append({'role':'assistant',"content":jsonresponse["answer"]})
