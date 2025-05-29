@@ -1,3 +1,5 @@
 chroma_langchain_db2/
 .env
 .DS_Store
+PDF/
+PPTX/
