@@ -10,6 +10,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 os.environ["LANGCHAIN_API_KEY"]=os.getenv("LANGCHAIN_API_KEY")
 os.environ["LANGCHAIN_PROJECT"]=os.getenv("LANGCHAIN_PROJECT")
 os.environ["LANGCHAIN_TRACING_V2"]="true"
+os.environ["SERPER_API_KEY"] = os.getenv("SERPER_API_KEY")
 
 from langchain.vectorstores import Chroma, FAISS 
 from langchain.embeddings import OpenAIEmbeddings
@@ -27,10 +28,6 @@ from langchain.callbacks import StreamlitCallbackHandler
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 
-### Load environment variables from .env file
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-os.environ["SERPER_API_KEY"] = os.getenv("SERPER_API_KEY")
-
 ###  calling tools
 arxivwrapper = ArxivAPIWrapper(top_k_result=1, doc_content_chars_max=200)
 arxivtool = ArxivQueryRun(api_wrapper=arxivwrapper)
@@ -47,7 +44,7 @@ searchtool = Tool(
     )
 
 embedding1 = OpenAIEmbeddings(model="text-embedding-3-large")
-db = Chroma(persist_directory="chroma_langchain_db2", embedding_function=embedding1, collection_name="fides_crawled_data")
+db = Chroma(persist_directory="chroma_langchain_db", embedding_function=embedding1, collection_name="fides_crawled_data")
 db.get()
 retriver1 = db.as_retriever()
 # retrivertool1 = create_retriever_tool(retriver1, "FidesInnovaInformationDatabase", "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI")

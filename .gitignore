@@ -1,4 +1,5 @@
 chroma_langchain_db2/
+chroma_langchain_db/
 .env
 .DS_Store
 PDF/
