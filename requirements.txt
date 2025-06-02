@@ -1,32 +1,36 @@
 # LangChain ecosystem
-langchain==0.3.25
-langchain_core==0.3.59
-langchain_community==0.3.24
-langchain_openai==0.3.16
-langchain_text_splitters==0.3.8
+langchain
+langchain_core
+langchain_community
+langchain_openai
+langchain_text_splitters
 
 # Embeddings and Tokenization
-openai==1.30.1
-tiktoken==0.7.0
+openai
+tiktoken
 
 # Streamlit app
-streamlit==1.45.0
+streamlit
 
 # Vector DB
-chromadb==0.4.24
+chromadb
 
 # Environment variables
-python-dotenv==1.0.1
+python-dotenv
 
 # Utilities and Web
-requests==2.32.3
-bs4==0.0.2
-pytube==15.0.0
-yt_dlp==2024.5.27
-youtube-transcript-api==0.6.2
-pypdf==4.2.0
-gdown==5.1.0
-unzip (📌 not a PyPI package; can be removed or replaced with `zipfile` module)
+requests
+bs4
+pytube
+yt_dlp
+youtube-transcript-api
+pypdf
+gdown
 
 # Git utilities (if you are using GitLoader from LangChain)
-GitPython==3.1.43
+GitPython
+
+selenium
+webdriver-manager
+unstructured
+openai

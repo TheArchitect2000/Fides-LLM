@@ -65,7 +65,7 @@ retrivertool1 = Tool(
         description = "Search any information about Fides Innova project and technology.",
     ) 
 
-llm = ChatOpenAI(model="gpt-4o-mini")
+llm = ChatOpenAI(model="gpt-4o")
 
 # Session management
 def get_session_history(session_id:str)->BaseChatMessageHistory:

@@ -3,36 +3,42 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# Set the virtual environment directory name
+VENV_DIR="venv"
+
+echo "🔍 Checking for virtual environment: $VENV_DIR"
+
+# Step 1: Remove virtual environment folder
+if [ -d "$VENV_DIR" ]; then
+  sudo rm -rf "$VENV_DIR"
+  echo "✅ Removed virtual environment folder: $VENV_DIR"
+else
+  echo "⚠️  No virtual environment folder named '$VENV_DIR' found."
+fi
+
+# Step 2: Remove all __pycache__ directories
+echo "🧹 Removing all __pycache__ folders..."
+find . -type d -name "__pycache__" -exec rm -r {} +
+echo "✅ __pycache__ cleanup complete."
+
+# Step 3: Remove all .pyc files
+echo "🧹 Removing all .pyc files..."
+find . -type f -name "*.pyc" -delete
+echo "✅ .pyc cleanup complete."
+
+# Step 4: Create virtual environment
+
 echo "🔧 Creating virtual environment..."
 python3 -m venv venv
 
+# Step 5: Activate virtual environment
 echo "✅ Activating virtual environment..."
 source venv/bin/activate
 
+# Step 6: Install required packages
 echo "📦 Installing required packages..."
-# pip install --upgrade pip
-# pip install python-dotenv langchain_openai langchain_community chromadb youtube-transcript-api streamlit
-# pip install pytube pypdf web3 SpeechRecognition opencv-python beautifulsoup4 arxiv wikipedia
+pip install --upgrade -r requirements.txt
 
-pip install \
-langchain==0.3.25 \
-langchain_core==0.3.59 \
-langchain_community==0.3.24 \
-langchain_openai==0.3.16 \
-langchain_text_splitters==0.3.8 \
-openai==1.30.1 \
-tiktoken==0.7.0 \
-streamlit==1.45.0 \
-chromadb==0.4.24 \
-python-dotenv==1.0.1 \
-requests==2.32.3 \
-bs4==0.0.2 \
-pytube==15.0.0 \
-yt_dlp==2024.5.27 \
-youtube-transcript-api==0.6.2 \
-pypdf==4.2.0 \
-gdown==5.1.0 \
-GitPython==3.1.43
-
+# Step 7: Run embedding script
 echo "🚀 Running embedding script..."
 python3 embedding.py
