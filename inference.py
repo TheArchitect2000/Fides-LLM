@@ -203,21 +203,21 @@ with st.sidebar:
     st.markdown("---", unsafe_allow_html=True)
 
  #   st.markdown("### 🔗 Links", unsafe_allow_html=True)
-    st.markdown(
-        """
-        <div style="color:white">
-        <h3>🔗 Links</h3>
-        <ul>
-            <li><a href="https://www.fidesinnova.io" target="_blank" style="color:white;">🌐 Fides Innova Website</a></li>
-            <li><a href="https://x.com/fidesinnova" target="_blank" style="color:white;">🐦 Fides Innova on X</a></li>
-            <li><a href="https://www.youtube.com/@fidesinnova" target="_blank" style="color:white;">📺 YouTube Channel</a></li>
-            <li><a href="https://github.com/TheArchitect2000/iot-server" target="_blank" style="color:white;">💻 GitHub IoT Server</a></li>
-            <li><a href="https://github.com/TheArchitect2000/zkiot-arm-siemens-iot2050-c" target="_blank" style="color:white;">💻 ZKP Device Integration</a></li>
-            <li><a href="https://github.com/TheArchitect2000/Fides-Innova-WiKi?tab=readme-ov-file#fidesinnova-wiki" target="_blank" style="color:white;">📘 Wiki</a></li>
-        </ul>
-        </div>""",
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+                <div style="color:white">
+                <h3>🔗 More resources</h3>
+                <ul>
+                    <li><a href="https://www.fidesinnova.io" target="_blank" style="color:white;">🌐 Website</a></li>
+                    <li><a href="https://x.com/fidesinnova" target="_blank" style="color:white;">🐦 X</a></li>
+                    <li><a href="https://www.youtube.com/@fidesinnova" target="_blank" style="color:white;">📺 YouTube</a></li>
+                    <li><a href="https://github.com/TheArchitect2000/iot-server" target="_blank" style="color:white;">💻 IoT Server GitHub</a></li>
+                    <li><a href="https://github.com/TheArchitect2000/zkiot-arm-siemens-iot2050-c" target="_blank" style="color:white;">💻 ZKP Device Integration</a></li>
+                    <li><a href="https://github.com/TheArchitect2000/Fides-Innova-WiKi?tab=readme-ov-file#fidesinnova-wiki" target="_blank" style="color:white;">📘 Wiki</a></li>
+                    <li><a href="http://agent1.fidesinnova.io:8502" target="_blank" style="color:white;">📘 ZKP Commitment Generator Agent</a></li>
+                </ul>
+                </div>""",
+                unsafe_allow_html=True
+                )
     
 if prompt := st.chat_input(placeholder="- How to install a new IoT Server and connect to the Fides network?\n- What's zk-IoT?\n- How to install a zkDevice?\n- How to add Fides library to my C++ code?\n- How to generate and submit a program commitment?\n- How to generate a zero-knowledge proof (ZKP)?"):
     st.session_state.messages.append({"role":"user","content":prompt})
