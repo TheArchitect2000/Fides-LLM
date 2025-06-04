@@ -419,6 +419,21 @@ print("PDF Crawler started ....")
 pdf_docs = []
 pdf_files = [
     "PDF/zkIoT.pdf",
+    "PDF/Consensus Algorithms.pdf",
+    "PDF/Data Monetization.pdf",
+    "pdf/Decentralized Delegated Proof.pdf",
+    "pdf/Digital Twins.pdf",
+    "pdf/Fides service contracts.pdf",
+    "pdf/fides_innova_gitbook_placeholder.pdf",
+    "pdf/IEEEpaper_RAMS2017.pdf",
+    "pdf/IoT Startups.pdf",
+    "pdf/MIoTN.pdf",
+    "pdf/MQTT and MQTTS protocols.pdf",
+    "pdf/p86-chatzopoulos.pdf",
+    "pdf/Service Contract .pdf",
+    "pdf/Service Market.pdf",
+    "pdf/What’s Web 3.0.pdf"
+
 ]
 
 for path in pdf_files:
