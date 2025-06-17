@@ -34,3 +34,10 @@ selenium
 webdriver-manager
 unstructured
 openai
+
+# AirFlow requirements file
+
+python_version >= "3.12.0"
+weaviate-client==4.14.1
+fastembed==0.6.1
+ipython

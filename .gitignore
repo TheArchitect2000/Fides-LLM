@@ -1,5 +1,6 @@
 chroma_langchain_db2/
 chroma_langchain_db/
+cloned_repos/
 .env
 .DS_Store
 PPTX/
