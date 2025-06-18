@@ -212,15 +212,14 @@ with st.sidebar:
  #   st.markdown("### 🔗 Links", unsafe_allow_html=True)
     st.markdown("""
                 <div style="color:white">
-                <h3>🔗 More resources</h3>
                 <ul>
-                    <li><a href="https://www.fidesinnova.io" target="_blank" style="color:white;">🌐 Website</a></li>
-                    <li><a href="https://x.com/fidesinnova" target="_blank" style="color:white;">🐦 X</a></li>
-                    <li><a href="https://www.youtube.com/@fidesinnova" target="_blank" style="color:white;">📺 YouTube</a></li>
-                    <li><a href="https://github.com/TheArchitect2000/iot-server" target="_blank" style="color:white;">💻 IoT Server GitHub</a></li>
-                    <li><a href="https://github.com/TheArchitect2000/zkiot-arm-siemens-iot2050-c" target="_blank" style="color:white;">💻 ZKP Device Integration</a></li>
-                    <li><a href="https://github.com/TheArchitect2000/Fides-Innova-WiKi?tab=readme-ov-file#fidesinnova-wiki" target="_blank" style="color:white;">📘 Wiki</a></li>
-                    <li><a href="http://agent1.fidesinnova.io:8502" target="_blank" style="color:white;">📘 ZKP Commitment Generator Agent</a></li>
+                    <li><a href="https://www.fidesinnova.io" target="_blank" style="color:white;">Website</a></li>
+                    <li><a href="https://x.com/fidesinnova" target="_blank" style="color:white;">X</a></li>
+                    <li><a href="https://www.youtube.com/@fidesinnova" target="_blank" style="color:white;">YouTube</a></li>
+                    <li><a href="https://github.com/TheArchitect2000/iot-server" target="_blank" style="color:white;">IoT Server GitHub</a></li>
+                    <li><a href="https://github.com/TheArchitect2000/zkiot-arm-siemens-iot2050-c" target="_blank" style="color:white;">ZKP Device Integration</a></li>
+                    <li><a href="https://github.com/TheArchitect2000/Fides-Innova-WiKi?tab=readme-ov-file#fidesinnova-wiki" target="_blank" style="color:white;">Wiki</a></li>
+                    <li><a href="http://agent1.fidesinnova.io:8502" target="_blank" style="color:white;">ZKP Integration Agent</a></li>
                 </ul>
                 </div>""",
                 unsafe_allow_html=True
