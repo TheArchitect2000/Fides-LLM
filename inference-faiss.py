@@ -29,7 +29,11 @@ from langchain.callbacks import StreamlitCallbackHandler
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 
-###  calling tools
+
+from search_faiss import search
+
+################################################
+# Step 1:  calling tools
 arxivwrapper = ArxivAPIWrapper(top_k_result=1, doc_content_chars_max=200)
 arxivtool = ArxivQueryRun(api_wrapper=arxivwrapper)
 
@@ -44,17 +48,9 @@ searchtool = Tool(
         description = "useful for when you need to answer questions about current events. You should ask targeted questions",
     )
 
-embedding1 = OpenAIEmbeddings(model="text-embedding-3-large")
-
-db = FAISS.load_local("faiss_fides_crawled_data", embedding1, allow_dangerous_deserialization=True)
-#  db.get()
-retriver1 = db.as_retriever()
-# retrivertool1 = create_retriever_tool(retriver1, "FidesInnovaInformationDatabase", "Search any information Fides Innova ZKP, zk-IoT, zkSensor, zkMultiSensor, Verifiable Agentic AI")
-
-#######################                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-# chain = prompt | llm
+####### Create a retriever tool for Fides Innova information database
 def query(question):
-    context = db.similarity_search(question, k=1)
+    context = search(question, k=1)
     # page_contents = list(map(lambda x:x.page_content, context))
     # meta_data = list(map(lambda x:x.metadata, context))
     # return {"context":page_contents, "metadata":meta_data}
@@ -67,20 +63,21 @@ retrivertool1 = Tool(
         description = "Search any information about Fides Innova project and technology.",
     ) 
 
-llm = ChatOpenAI(model="gpt-4o")
 
-# Session management
-def get_session_history(session_id:str)->BaseChatMessageHistory:
-    if session_id not in st.session_state.store:
-        st.session_state.store[session_id]=ChatMessageHistory()
-    return st.session_state.store[session_id]
-
-# Initialize the agent
 tool_list = [retrivertool1, searchtool, wikipediatool, arxivtool]
 
+############################
+# Step 2: Initialize the LLM
+llm = ChatOpenAI(model="gpt-4o-mini")
+
+# we are defining an agent, not a chain
+# chain = prompt | llm
+
+##############################################
+# Step 3:Initialize the prompt template
 prompt = ChatPromptTemplate.from_messages([
     ("system", """
-     You are an expert in Fides Innova project. 
+     You are an expert in Fides Innova Verifiable Computing ZKP project. 
      Always respond strictly in valid JSON format like this: {{\"answer\": \"...\", \"metadata\": {{\"type\": \"...\", \"source\": \"...\", \"title\": \"...\"}}}}. Do not include markdown, backticks, or explanations outside the JSON. 
      Based on the context, answer the question, and return the output. 
      """),
@@ -93,24 +90,31 @@ prompt = ChatPromptTemplate.from_messages([
    MessagesPlaceholder("agent_scratchpad")
 ])
 
+############################################################
+# Initialize the agent
 fidesagent = create_openai_tools_agent(llm, tool_list, prompt)
-fidesagentexecutor = AgentExecutor( agent = fidesagent, tools = tool_list)
+fidesagentexecutor = AgentExecutor(agent=fidesagent, tools=tool_list)
+
+# Session management
+def get_session_history(session_id:str)->BaseChatMessageHistory:
+    if session_id not in st.session_state.store:
+        st.session_state.store[session_id]=ChatMessageHistory()
+    return st.session_state.store[session_id]
+
+
+# fidesagentexecutor2 = fidesagentexecutor | JsonOutputParser()
+
 fidesagentexecutorwithhistory = RunnableWithMessageHistory(fidesagentexecutor, get_session_history, output_messages_key="output", input_messages_key="input", history_messages_key="chat_history")
 
-fidesagentexecutor2 = fidesagentexecutor | JsonOutputParser()
-
-# db.similarity_search("what's zkmultisense?", k=1)
-
-#######################
-st.title("Ask your questions about Fides Innova.")
-# user_input = st.text_input("Please type your question:")
-
+############################
 def get_or_create_session_id():
     import uuid
     if "session_id" not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
     return st.session_state.session_id
 
+st.title("Ask your questions about Fides Innova.")
+# user_input = st.text_input("Please type your question:")
 # session_id=st.text_input("Session ID",value="default_session")
 session_id = str(get_or_create_session_id())
 
@@ -164,6 +168,7 @@ for msg in st.session_state.messages2:
 #             st.chat_message(msg["role"]).write(msg['content'])
 
 # Inject custom CSS to style the sidebar
+
 st.markdown(
     """
     <style>

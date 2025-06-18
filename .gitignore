@@ -1,8 +1,10 @@
 chroma_langchain_db2/
 chroma_langchain_db/
 cloned_repos/
+PPTX/
 .env
 .DS_Store
-PPTX/
-.DS_Store
-.DS_Store
+__pycache__/
+venv/
+YouTube/
+fides_faiss_crawled_data/
