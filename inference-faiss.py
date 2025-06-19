@@ -110,7 +110,7 @@ def get_or_create_session_id():
         st.session_state.session_id = str(uuid.uuid4())
     return st.session_state.session_id
 
-st.title("Ask me anything about Fides Innova’s verifiable computing technology.")
+st.title("Fides Innova AI Assistant")
 # user_input = st.text_input("Please type your question:")
 # session_id=st.text_input("Session ID",value="default_session")
 session_id = str(get_or_create_session_id())
@@ -130,7 +130,7 @@ if "messages" not in st.session_state:
 
 if "messages2" not in st.session_state:
     st.session_state["messages2"]=[
-        {"role":"assistant","content":"I have access to Fides Innova documents including the GitHub repositories, YouTube videos, WiKi, Pitch Deck, PDF files, etc. \n Ask me anything about Fides Innova verifiable computing technology and project."}
+        {"role":"assistant","content":"Ask me anything about Fides Innova’s verifiable computing technology.\n"}
     ]
 
 for msg in st.session_state.messages2:
