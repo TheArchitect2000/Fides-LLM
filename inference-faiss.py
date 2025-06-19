@@ -29,7 +29,6 @@ from langchain.callbacks import StreamlitCallbackHandler
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 
-
 from search_faiss import search
 
 ################################################
@@ -62,7 +61,6 @@ retrivertool1 = Tool(
         func = query,
         description = "Search any information about Fides Innova project and technology.",
     ) 
-
 
 tool_list = [retrivertool1, searchtool, wikipediatool, arxivtool]
 
@@ -116,6 +114,9 @@ st.title("Ask me anything about Fides Innova’s verifiable computing technology
 # user_input = st.text_input("Please type your question:")
 # session_id=st.text_input("Session ID",value="default_session")
 session_id = str(get_or_create_session_id())
+
+import datetime
+print("Fides-LLM started at", datetime.datetime.now())
 
 if 'store' not in st.session_state:
     st.session_state.store={}
