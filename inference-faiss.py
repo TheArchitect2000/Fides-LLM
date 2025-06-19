@@ -110,13 +110,10 @@ def get_or_create_session_id():
         st.session_state.session_id = str(uuid.uuid4())
     return st.session_state.session_id
 
-st.title("Fides Innova AI Assistant")
+st.title("Ask me anything about Fides Innova’s verifiable computing technology.")
 # user_input = st.text_input("Please type your question:")
 # session_id=st.text_input("Session ID",value="default_session")
 session_id = str(get_or_create_session_id())
-
-import datetime
-print("Fides-LLM started at", datetime.datetime.now())
 
 if 'store' not in st.session_state:
     st.session_state.store={}
@@ -130,7 +127,7 @@ if "messages" not in st.session_state:
 
 if "messages2" not in st.session_state:
     st.session_state["messages2"]=[
-        {"role":"assistant","content":"Ask me anything about Fides Innova’s verifiable computing technology.\n"}
+        {"role":"assistant","content":"How can I help you today?\n"}
     ]
 
 for msg in st.session_state.messages2:
@@ -212,8 +209,8 @@ with st.sidebar:
     st.markdown("""
                 <div style="color:white">
                 <ul>
-                    <li><a href="https://www.fidesinnova.io" target="_blank" style="color:white;">Website</a></li>
-                    <li><a href="https://x.com/fidesinnova" target="_blank" style="color:white;">X</a></li>
+`                    <li><a href="https://www.fidesinnova.io" target="_blank" style="color:white;">Website</a></li>
+`                    <li><a href="https://x.com/fidesinnova" target="_blank" style="color:white;">X</a></li>
                     <li><a href="https://www.youtube.com/@fidesinnova" target="_blank" style="color:white;">YouTube</a></li>
                     <li><a href="https://github.com/TheArchitect2000/iot-server" target="_blank" style="color:white;">IoT Server GitHub</a></li>
                     <li><a href="https://github.com/TheArchitect2000/zkiot-arm-siemens-iot2050-c" target="_blank" style="color:white;">ZKP Device Integration</a></li>
