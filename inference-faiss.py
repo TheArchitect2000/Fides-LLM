@@ -221,7 +221,7 @@ with st.sidebar:
                 unsafe_allow_html=True
                 )
     
-if prompt := st.chat_input(placeholder="- How to install a new IoT Server and connect to the Fides network?\n- What's zk-IoT?\n- How to install a zkDevice?\n- How to add Fides library to my C++ code?\n- How to generate and submit a program commitment?\n- How to generate a zero-knowledge proof (ZKP)?"):
+if prompt := st.chat_input(placeholder="- How to install a new IoT Server and connect to the Fides Innova network?\n- What's zk-IoT?\n- How to install a zkDevice?\n- How to add Fides library to my C++ code?\n- How to generate and submit a program commitment?\n- How to generate a zero-knowledge proof (ZKP)?"):
     st.session_state.messages.append({"role":"user","content":prompt})
     st.session_state.messages2.append({"role":"user","content":prompt})
 
