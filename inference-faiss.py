@@ -49,7 +49,7 @@ searchtool = Tool(
 
 ####### Create a retriever tool for Fides Innova information database
 def query(question):
-    k=3
+    k=5
     context = search(question, k=k)
     # page_contents = list(map(lambda x:x.page_content, context))
     # meta_data = list(map(lambda x:x.metadata, context))
