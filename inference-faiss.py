@@ -49,12 +49,19 @@ searchtool = Tool(
 
 ####### Create a retriever tool for Fides Innova information database
 def query(question):
-    context = search(question, k=1)
+    k=3
+    context = search(question, k=k)
     # page_contents = list(map(lambda x:x.page_content, context))
     # meta_data = list(map(lambda x:x.metadata, context))
     # return {"context":page_contents, "metadata":meta_data}
-    return {"context":context[0].page_content, "metadata":context[0].metadata}
-    # return (context)
+#    return {"context":context[0].page_content, "metadata":context[0].metadata}
+    output = []
+    for i in range(k):
+        output.append({
+            "context": context[i].page_content,
+            "metadata": context[i].metadata
+            })
+    return output
 
 retrivertool1 = Tool(
         name = "FidesInnovaInfoDB",
@@ -62,7 +69,7 @@ retrivertool1 = Tool(
         description = "Search any information about Fides Innova project and technology.",
     ) 
 
-tool_list = [retrivertool1, searchtool, wikipediatool, arxivtool]
+tool_list = [retrivertool1] #, searchtool, wikipediatool, arxivtool]
 
 ############################
 # Step 2: Initialize the LLM
@@ -77,7 +84,7 @@ prompt = ChatPromptTemplate.from_messages([
     ("system", """
      You are an expert in Fides Innova Verifiable Computing ZKP project. 
      Always respond strictly in valid JSON format like this: {{\"answer\": \"...\", \"metadata\": {{\"type\": \"...\", \"source\": \"...\", \"title\": \"...\"}}}}. Do not include markdown, backticks, or explanations outside the JSON. 
-     Based on the context, answer the question, and return the output. 
+     Based on the context, answer the question, and return the output. The possible value for "type" in metadata are "Web", "YouTube", "PPTX", "PDF", "GitHub", or None.
      """),
 # If you found something valuable in FidesInnovaInfoDB, the answer would be a list of documents that have page_content and metadata, these two should be used to create the answer and metadata.
 #    ("system", "You are an expert in Fides Innova Verifiable Computing. Always respond strictly in valid JSON format like this: {\"answer\": \"...\", \"metadata\": {\"type\": \"...\", \"source\": \"...\"}}. Do not include markdown, backticks, or explanations outside the JSON."),

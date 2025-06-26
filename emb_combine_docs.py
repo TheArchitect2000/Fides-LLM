@@ -3,7 +3,7 @@ def combine_docs(web_docs, github_docs, youtube_docs, pdf_docs, pptx_docs):
 
     print("Splitter started ....")
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size = 500, chunk_overlap = 100)
+    splitter = RecursiveCharacterTextSplitter(chunk_size = 1000, chunk_overlap = 100)
     print("Splitting web_docs ...")
     split_web_docs = splitter.split_documents(web_docs or [])
     print("Splitting github_docs ...")
