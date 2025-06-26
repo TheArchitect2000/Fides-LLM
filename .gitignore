@@ -2,7 +2,6 @@ chroma_langchain_db/
 cloned_repos/
 PPTX/
 YouTube/
-PDF/
 venv/
 .env
 .DS_Store
