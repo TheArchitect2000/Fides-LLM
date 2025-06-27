@@ -2,7 +2,10 @@ chroma_langchain_db/
 cloned_repos/
 PPTX/
 YouTube/
-venv/
+airflow-venv/
+llm-venv/
+web3-venv/
 .env
 .DS_Store
 __pycache__/
+cloned_repos/
